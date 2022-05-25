@@ -42,13 +42,30 @@
             android:padding="10dp"
             android:src="@drawable/ic_loadingflowccw" />
     </RelativeLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcvw_data"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
-        android:layout_below="@+id/rvly_header"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_below="@+id/rvly_header"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp" />
+
+
+    <TextView
+        android:id="@+id/bbtn_scan"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="START SCAN"
+        android:background="@drawable/button_scan"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp"
+        android:layout_width="160dp"
+        android:layout_height="40dp"/>
 
 
 </RelativeLayout>

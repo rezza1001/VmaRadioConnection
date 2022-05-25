@@ -2,7 +2,6 @@ package com.vma.vmaradioconnection;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +18,9 @@ import java.util.ArrayList;
  */
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.AdapterView>{
 
-    private final ArrayList<Bundle> mList;
+    private final ArrayList<BleHolder> mList;
 
-    public MainAdapter(ArrayList<Bundle> list){
+    public MainAdapter(ArrayList<BleHolder> list){
         this.mList = list;
     }
 
@@ -37,11 +36,12 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.AdapterView>{
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull AdapterView holder, int position) {
-        final Bundle data = mList.get(position);
-        String name = data.getString("name") + " ("+data.getString("type")+")";
-        holder.txvw_id.setText(data.getString("id"));
+        final BleHolder data = mList.get(position);
+        String name = data.name + " ("+data.type+")";
+        holder.txvw_id.setText(data.id);
         holder.txvw_name.setText(name);
-        if (data.getString("type").equals("Unknown")){
+        holder.txvw_rssi.setText( data.rssi+" dB");
+        if (data.type.equals("Unknown")){
             holder.card_main.setCardBackgroundColor(Color.parseColor("#EEDDDD"));
         }
         else {
@@ -56,7 +56,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.AdapterView>{
     }
 
     public static class AdapterView extends RecyclerView.ViewHolder{
-        TextView txvw_name,txvw_id;
+        TextView txvw_name,txvw_id,txvw_rssi;
         CardView card_main;
 
         public AdapterView(@NonNull View itemView) {
@@ -64,6 +64,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.AdapterView>{
             txvw_name = itemView.findViewById(R.id.txvw_name);
             txvw_id = itemView.findViewById(R.id.txvw_id);
             card_main = itemView.findViewById(R.id.card_main);
+            txvw_rssi = itemView.findViewById(R.id.txvw_rssi);
         }
     }
 }

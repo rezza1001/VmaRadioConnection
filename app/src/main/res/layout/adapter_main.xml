@@ -28,15 +28,25 @@
                 android:textColor="#002171"
                 android:textSize="17sp"
                 android:textStyle="normal" />
+
             <TextView
                 android:id="@+id/txvw_id"
-                android:textSize="15sp"
-                android:textStyle="normal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txvw_name"
+                android:layout_marginTop="2dp"
                 android:fontFamily="sans-serif"
                 android:text="121271881"
                 android:textColor="@color/black"
-                android:layout_marginTop="2dp"
-                android:layout_below="@+id/txvw_name"
+                android:textSize="15sp"
+                android:textStyle="normal" />
+            <TextView
+                android:id="@+id/txvw_rssi"
+                android:layout_alignTop="@+id/txvw_id"
+                android:layout_alignParentEnd="true"
+                android:text="0"
+                android:textSize="14sp"
+                android:textColor="#F42E3E"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </RelativeLayout>

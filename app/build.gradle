@@ -10,7 +10,7 @@ android {
         minSdk 21
         targetSdk 30
         versionCode 1
-        versionName "1.0"
+        versionName "v1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,6 +25,29 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def newName = 'BLE-' + getDate()+ ''
+            if (variant.buildType.isDebuggable()) {
+                newName += "-${defaultConfig.versionName}"
+            } else {
+                newName += '_release'
+            }
+            if (variant.buildType.versionNameSuffix) {
+                newName += "-${variant.buildType.versionNameSuffix}"
+            }
+            if (output.zipAlign) {
+                outputFileName = newName + '-aligned.apk'
+            }
+            outputFileName = newName + '.apk'
+            output.versionCodeOverride = defaultConfig.versionCode;
+        }
+    }
+}
+
+def getDate() {
+    return new Date().format('ddMMyyyy')
 }
 
 dependencies {

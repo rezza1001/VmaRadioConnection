@@ -1,11 +1,7 @@
 package com.vma.vmaradioconnection;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -18,16 +14,24 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<Bundle> listData = new ArrayList<>();
+    ArrayList<BleHolder> listData = new ArrayList<>();
     MainAdapter mainAdapter;
     HashMap<String, String> mapDevices = new HashMap<>();
+    TextView bbtn_scan;
 
     static final int ENABLE_BLUETOOTH_REQUEST_CODE = 1;
     private BluetoothLeScanner bluetoothLeScanner;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView imvw_scan;
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView rcvw_data = findViewById(R.id.rcvw_data);
         rcvw_data.setLayoutManager(new LinearLayoutManager(this));
         imvw_scan = findViewById(R.id.imvw_scan);
+        bbtn_scan = findViewById(R.id.bbtn_scan);
 
         mainAdapter = new MainAdapter(listData);
         rcvw_data.setAdapter(mainAdapter);
@@ -53,6 +59,26 @@ public class MainActivity extends AppCompatActivity {
         imvw_scan.setOnClickListener(view -> {
             if (imvw_scan.getTag().toString().equals("0")){
                 setupBluetooth();
+            }
+        });
+
+
+        bbtn_scan.setOnClickListener(view -> {
+            if (imvw_scan.getTag().toString().equals("0")){
+                setupBluetooth();
+            }
+            else {
+                imvw_scan.setTag(0);
+                bbtn_scan.setBackgroundResource(R.drawable.button_scan);
+                bbtn_scan.setText("START SCAN");
+                imvw_scan.clearAnimation();
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        showInfo("Device Bluetooth not Granted");
+                        return;
+                    }
+                }
+                bluetoothLeScanner.stopScan(leScanCallback);
             }
         });
     }
@@ -68,8 +94,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
     private void setupBluetooth() {
         listData.clear();
+        mapDevices.clear();
+        mainAdapter.notifyDataSetChanged();
+
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             showInfo("Device doesn't support Bluetooth");
@@ -85,22 +115,26 @@ public class MainActivity extends AppCompatActivity {
 
         if (!bluetoothAdapter.enable()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST_CODE);
+            this.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST_CODE);
         } else {
-            showInfo("Bluetooth Active");
+            showInfo("Bluetooth OK");
         }
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         bluetoothLeScanner.startScan(leScanCallback);
         imvw_scan.setTag(1);
+        bbtn_scan.setBackgroundResource(R.drawable.button_stop);
+        bbtn_scan.setText("STOP SCAN");
 
         imvw_scan.clearAnimation();
         imvw_scan.startAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.rotate));
 
         new Handler().postDelayed(() -> {
             imvw_scan.setTag(0);
+            bbtn_scan.setBackgroundResource(R.drawable.button_scan);
             imvw_scan.clearAnimation();
             bluetoothLeScanner.stopScan(leScanCallback);
+            bbtn_scan.setText("START SCAN");
         },30000);
     }
 
@@ -110,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     ScanCallback leScanCallback = new ScanCallback() {
+        @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
@@ -125,18 +160,21 @@ public class MainActivity extends AppCompatActivity {
                     if (mapDevices.get(device.getAddress()) == null){
                         mapDevices.put(device.getAddress(), device.getName());
 
-                        Bundle bundle = new Bundle();
-                        bundle.putString("name",device.getName());
+                        BleHolder holder = new BleHolder();
+                        holder.name = device.getName();
+                        holder.rssi = result.getRssi();
                         if (device.getName().startsWith("3")){
-                            bundle.putString("type","Vma Radio");
-                            bundle.putString("id",NcsUtill.bleNameToID(device.getName()));
+                            holder.type = "Vma Radio";
+                            holder.id = NcsUtill.bleNameToID(device.getName());
                         }
                         else {
-                            bundle.putString("type","Unknown");
-                            bundle.putString("id","Undefined VMA id");
+                            holder.type = "Unknown";
+                            holder.id = "Undefined VMA id";
                         }
-                        listData.add(bundle);
-                        mainAdapter.notifyItemInserted(listData.size());
+                        listData.add(holder);
+
+                        Collections.sort(listData);
+                        mainAdapter.notifyDataSetChanged();
                     }
                 }
             }
@@ -147,5 +185,6 @@ public class MainActivity extends AppCompatActivity {
             super.onScanFailed(errorCode);
         }
     };
+
 
 }
